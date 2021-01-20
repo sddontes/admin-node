@@ -53,7 +53,7 @@ export const constantRoutes: RouteConfig[] = [
     ]
   },
   {
-    path: '/login',
+    path: '/login1',
     component: () => import(/* webpackChunkName: "login" */ '@/views/login/index.vue'),
     meta: { hidden: true }
   },

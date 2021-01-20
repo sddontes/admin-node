@@ -8,7 +8,8 @@ const Token = {
       let data = jwt.verify(token, 'token');
       return {
         token:true,
-        id:data.id
+        id:data.id,
+        username: data.username,
       };
     } catch (e) {
       return {

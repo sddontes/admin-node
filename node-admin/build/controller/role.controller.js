@@ -16,7 +16,7 @@ const role_model_1 = __importDefault(require("../models/role.model"));
 const formateData_1 = __importDefault(require("../utils/formateData"));
 const getRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     role_model_1.default.getRole(req, (data) => {
-        resp.send({ code: 200, data: formateData_1.default.replaceUnderLine(data.children), message: "操作成功" });
+        resp.send({ code: 200, data: formateData_1.default.replaceUnderLine([data]), message: "操作成功" });
     });
 });
 const setRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
@@ -31,7 +31,7 @@ const setRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
         });
         return false;
     }
-    role_model_1.default.setRole(name, remark, status, (data) => {
+    role_model_1.default.setRole(req, (data) => {
         if (data.affectedRows) {
             resp.send({
                 code: 200,
@@ -43,23 +43,27 @@ const setRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 const deleteRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-    role_model_1.default.getRoutes((data) => {
-        resp.send({
-            code: 200,
-            data: {
-                list: formateData_1.default.replaceUnderLine(data)
-            }
-        });
+    role_model_1.default.deleteRole(req, (data) => {
+        if (data.affectedRows) {
+            resp.send({
+                code: 200,
+                data: {
+                    msg: '操作成功'
+                }
+            });
+        }
     });
 });
 const updateRole = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     role_model_1.default.updateRole(req, (data) => {
-        resp.send({
-            code: 200,
-            data: {
-                list: formateData_1.default.replaceUnderLine(data)
-            }
-        });
+        if (data.affectedRows) {
+            resp.send({
+                code: 200,
+                data: {
+                    msg: '操作成功'
+                }
+            });
+        }
     });
 });
 const getRoutes = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
@@ -74,12 +78,14 @@ const getRoutes = (req, resp) => __awaiter(void 0, void 0, void 0, function* () 
 });
 const setRoutes = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     role_model_1.default.setRoutes(req, (data) => {
-        resp.send({
-            code: 200,
-            data: {
-                list: formateData_1.default.replaceUnderLine(data)
-            }
-        });
+        if (data.affectedRows) {
+            resp.send({
+                code: 200,
+                data: {
+                    msg: '操作成功'
+                }
+            });
+        }
     });
 });
 exports.default = {

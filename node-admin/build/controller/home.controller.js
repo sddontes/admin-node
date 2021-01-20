@@ -33,6 +33,7 @@ const getUserLogin = (req, resp) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const md5 = crypto_1.default.createHash('md5');
         var password = md5.update('zhubei' + req.body.password).digest('hex');
+        console.log("================", password);
     }
     catch (error) {
         console.log(error);
@@ -46,7 +47,7 @@ const getUserLogin = (req, resp) => __awaiter(void 0, void 0, void 0, function* 
             }
             else {
                 delete data[0].password;
-                resp.send({ code: 200, data: Object.assign({}, { token: token_1.default.encrypt({ id: data[0].user_id }) }, data[0]) });
+                resp.send({ code: 200, data: Object.assign({}, { token: token_1.default.encrypt({ id: data[0].user_id, username: data[0].username }) }, data[0]) });
             }
         }
         else {
@@ -60,14 +61,21 @@ const getUserInfor = (req, resp) => __awaiter(void 0, void 0, void 0, function* 
     home_model_1.default.getUserInfor(req.body.useId, (data) => {
         resp.send({
             code: 200,
-            data: {
-                records: formateData_1.default.replaceUnderLine(data)
-            }
+            data: formateData_1.default.replaceUnderLine(data)[0]
+        });
+    });
+});
+const getCompany = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    home_model_1.default.getCompany((data) => {
+        resp.send({
+            code: 200,
+            data: formateData_1.default.replaceUnderLine(data)
         });
     });
 });
 exports.default = {
     getMenu,
     getUserLogin,
-    getUserInfor
+    getUserInfor,
+    getCompany
 };

@@ -4,7 +4,7 @@ const RoleModel = {
   async getRole(req:any,callback?:Function){
       const data = await query('select * from sys_role');
       const lastdata: any = data[0];
-      const id= req.body.roleId
+      const id= 1||req.body.roleId
       var resObj={}
       lastdata.forEach((e:any)=>{
         id===e.id&&(resObj=e)
@@ -19,7 +19,7 @@ const RoleModel = {
         }
       }
       filterRole(resObj)
-      console.log("resObj____",resObj)
+      console.log(req.body.roleId,lastdata,"resObj____",resObj)
       callback && callback(resObj)
   },
   async validityName(name:string) {

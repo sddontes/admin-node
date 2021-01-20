@@ -10,7 +10,7 @@ import settings from './settings'
 
 NProgress.configure({ showSpinner: false })
 
-const whiteList = ['/login', '/auth-redirect']
+const whiteList = ['/login1', '/auth-redirect']
 
 const getPageTitle = (key: string) => {
   const hasKey = i18n.te(`route.${key}`)
@@ -26,7 +26,7 @@ router.beforeEach(async(to: Route, _: Route, next: any) => {
   NProgress.start()
   // Determine whether the user has logged in
   if (UserModule.token) {
-    if (to.path === '/login') {
+    if (to.path === '/login1') {
       // If is logged in, redirect to the home page
       next({ path: '/' })
       NProgress.done()
@@ -48,7 +48,7 @@ router.beforeEach(async(to: Route, _: Route, next: any) => {
           // Remove token and redirect to login page
           UserModule.ResetToken()
           Message.error(err || 'Has Error')
-          next(`/login?redirect=${to.path}`)
+          next(`/login1?redirect=${to.path}`)
           NProgress.done()
         }
       } else {
@@ -62,7 +62,7 @@ router.beforeEach(async(to: Route, _: Route, next: any) => {
       next()
     } else {
       // Other pages that do not have permission to access are redirected to the login page.
-      next(`/login?redirect=${to.path}`)
+      next(`/login1?redirect=${to.path}`)
       NProgress.done()
     }
   }

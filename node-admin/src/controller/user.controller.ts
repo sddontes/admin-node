@@ -3,6 +3,15 @@ import UserModel  from '../models/user.model'
 import formateData from '../utils/formateData';
 
 const getUsers = async (req:Request,resp:Response) => {
+  if(req.body.username!=='admin'){
+    resp.send({
+      code: 401,
+      data: {
+          msg: '没有查询用户的权限'
+      }
+    })
+    return false;
+  }
   UserModel.getUsers(req,(data:any)=>{
       resp.send({
           code: 200,
@@ -16,8 +25,8 @@ const getUsers = async (req:Request,resp:Response) => {
   })
 }
 const setUser = async (req:Request,resp:Response) => {
-  const { username } = req.body;
-  const data = await UserModel.validityName(username);
+  const { userName } = req.body;
+  const data = await UserModel.validityName(userName);
   if(data.toString().length > 0){
       resp.send({
           code: 401,

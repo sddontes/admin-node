@@ -65,7 +65,7 @@ import { UserModule } from '@/store/modules/user'
 import Breadcrumb from '@/components/Breadcrumb/index.vue'
 import ErrorLog from '@/components/ErrorLog/index.vue'
 import Hamburger from '@/components/Hamburger/index.vue'
-import HeaderSearch from '@/components/HeaderSearch/index.vue'
+// import HeaderSearch from '@/components/HeaderSearch/index.vue'
 import LangSelect from '@/components/LangSelect/index.vue'
 import Screenfull from '@/components/Screenfull/index.vue'
 import SizeSelect from '@/components/SizeSelect/index.vue'
@@ -76,7 +76,7 @@ import SizeSelect from '@/components/SizeSelect/index.vue'
     Breadcrumb,
     ErrorLog,
     Hamburger,
-    HeaderSearch,
+    // HeaderSearch,
     LangSelect,
     Screenfull,
     SizeSelect

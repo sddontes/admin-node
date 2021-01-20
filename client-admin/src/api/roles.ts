@@ -27,12 +27,14 @@ export const deleteRole = (data: any) =>
     method: 'post',
     data
   })
+
 export const getRoutes = (data: any) =>
   request({
     url: '/role/getRoutes',
     method: 'post',
     data
   })
+
 export const setRoutes = (data: any) =>
   request({
     url: '/role/setRoutes',

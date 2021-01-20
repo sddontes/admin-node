@@ -27,12 +27,13 @@ const RoleModel = {
                 const arr = lastdata.filter((e) => currentObj.id === e.parent_id);
                 currentObj.children = arr || [];
                 if (arr.length) {
-                    arr.forEach((e) => {
-                        filterRole(e);
+                    arr.forEach((ele) => {
+                        filterRole(ele);
                     });
                 }
             }
             filterRole(resObj);
+            console.log("resObj____", resObj);
             callback && callback(resObj);
         });
     },
@@ -42,23 +43,25 @@ const RoleModel = {
             return data[0];
         });
     },
-    setRole(name, remark, status, callback) {
+    setRole(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield database_1.default('INSERT INTO `sys_role` (`name`, `remark`,`status`) VALUES (?, ?, ?)', [name, remark, status]);
+            const data = yield database_1.default('INSERT INTO `sys_role` (`type`,`name`, `remark`,`status`,`parent_id`) VALUES (1,?, ?, ?,?)', [req.body.name, req.body.remark, req.body.status, req.body.parentId]);
             const lastdata = data[0];
             callback && callback(lastdata);
         });
     },
-    deleteRole(id, callback) {
+    deleteRole(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const resData = yield database_1.default('DELETE FROM sys_role WHERE id=?' + id);
+            console.log(req.body.roleId, "+++++++++++++++req.body.roleId++++++++++++++++++++", req.body);
+            const resData = yield database_1.default('DELETE FROM sys_role WHERE id=?', [req.body.roleId]);
             const lastdata = resData[0];
             callback && callback(lastdata);
         });
     },
     updateRole(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const resData = yield database_1.default(`UPDATE sys_role SET name=?,remark=?,status=? WHERE id=? VALUES (?, ?, ?, ?) ${req.body.name},${req.body.remark},${req.body.status},${req.body.id},`);
+            const resData = yield database_1.default(`UPDATE sys_role SET name='${req.body.name}',remark='${req.body.remark}',status='${req.body.status}',parent_id='${req.body.parentId}' WHERE id=${req.body.id}`);
+            console.log("updateRole,resData:", resData);
             const lastdata = resData[0];
             callback && callback(lastdata);
         });
@@ -66,18 +69,20 @@ const RoleModel = {
     getRoutes(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const resData = yield database_1.default("select * from sys_role where roleId=" + req.body.roleId);
-            const lastdata = resData[0];
+            const lastdata = resData;
             callback && callback(lastdata);
         });
     },
     setRoutes(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            let deleteQuery = "DELETE FROM `sys_role_acl_module` WHERE role_id=" + req.body.roleId;
-            let addQuery = "INSERT INTO `sys_role` (`role_id`,`role_name`, `acl_id`,`acl_name`)";
-            req.body.rolePerssions.forEach((e) => {
-                addQuery += ` ('${req.body.roleId}','${req.body.roleName}','${e.aclId}','${e.aclName}')`;
+            let deleteQuery = "DELETE FROM sys_role_acl_module WHERE role_id=" + req.body.roleId;
+            let addQuery = "INSERT INTO sys_role_acl_module (role_id,role_name,acl_id,acl_name) VALUES";
+            console.log("req.body.rolePermissions_______________", req.body.rolePermissions);
+            req.body.rolePermissions.forEach((e) => {
+                addQuery += ` ('${req.body.roleId}','${req.body.roleName}',${e},${e}),`;
             });
-            addQuery += `on duplicate key update role_id=${req.body.roleId} role_name=${req.body.roleName}`;
+            addQuery = addQuery.substring(0, addQuery.length - 1);
+            console.log("addQuery", addQuery);
             yield database_1.default(deleteQuery);
             const resData = yield database_1.default(addQuery);
             const lastdata = resData[0];

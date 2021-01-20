@@ -5,7 +5,7 @@ import crypto from 'crypto'
 import Token from '../utils/token';
 
 const getMenu = async (req:Request,resp:Response) =>{
-    HomeModel.getMenu(req.body.useId,req.body.roleId,(data:any): void=>{
+    HomeModel.getMenu(req.body.roleId,(data:any): void=>{
         let returndata = formateData.replaceUnderLine(data);
         returndata = formateData.toTree(returndata)
         resp.send({
@@ -28,14 +28,13 @@ const getUserLogin = async (req:Request,resp:Response) =>{
     }
     HomeModel.getUserLogin(req.body.account,(data:any)=>{
         if(data.toString().length){
-          console.log("密码错误data",data)
             if(password!==data[0].password){
                 resp.send({code: 401,data: {
                     msg:'密码错误'
                 }});
             }else{
                 delete data[0].password
-                resp.send({code: 200,data:Object.assign({},{token: Token.encrypt({id:data[0].user_id})},data[0])})
+                resp.send({code: 200,data:Object.assign({},{token: Token.encrypt({id:data[0].user_id,username:data[0].username})},data[0])})
             }
         }else{
             resp.send({code: 401,data: {
@@ -52,8 +51,18 @@ const getUserInfor = async (req:Request,resp:Response) => {
       })
   })
 }
+
+const getCompany = async (req:Request,resp:Response) => {
+  HomeModel.getCompany((data:any)=>{
+      resp.send({
+          code: 200,
+          data: formateData.replaceUnderLine(data)
+      })
+  })
+}
 export default {
     getMenu,
     getUserLogin,
-    getUserInfor
+    getUserInfor,
+    getCompany
 }

@@ -76,8 +76,16 @@ export const getCompany = (data: any) =>
     method: 'post',
     data
   })
-  export const wangpu = () =>
+export const cas = () =>
   request({
-    url: 'http://admin.jia.com/wangpu/crazy-thursday/edit/10060',
+    // url: 'http://a.jia.com:9527/cas/login?st=20210114145130&app_id=550&service=http%3A%2F%2Fa.jia.com%3A9527&skip=false',
+    url: 'http://admin.qeeka.com:9527/api/cas/login?st=20210114145130&app_id=550&service=http%3A%2F%2Fadmin.jia.com%3A3000%2F&skip=false',
     method: 'get'
   })
+export const validate = () =>
+  request({
+    // url: 'http://a.jia.com:9527/cas/login?st=20210114145130&app_id=550&service=http%3A%2F%2Fa.jia.com%3A9527&skip=false',
+    url: 'http://admin.jia.com:3000/validate',
+    method: 'get'
+  })
+  

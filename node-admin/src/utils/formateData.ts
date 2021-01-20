@@ -2,16 +2,25 @@ const replaceUnderLine = (resArr:any, char = '_') =>{
     let newVal = '';
     let newArr = resArr.map((obj:any)=>{
       let newObj:any = {}
-      Object.keys(obj).map(val=>{
+      Object.keys(obj).map((val:any)=>{
         let arr = val.split('')
         let index = arr.indexOf(char)
         if(index>-1){
           arr.splice(index, 2, arr[index+1].toUpperCase())
           newVal = arr.join('')
-          newObj[newVal]=obj[val]
+          if(obj[val] instanceof Array){
+            newObj[newVal]=replaceUnderLine(obj[val])
+          }else{
+            newObj[newVal]=obj[val]
+          }
         }else{
-          newObj[val]=obj[val]
+          if(obj[val] instanceof Array){
+            newObj[val]=replaceUnderLine(obj[val])
+          }else{
+            newObj[val]=obj[val]
+          }
         }
+        
       })
       return newObj
     })

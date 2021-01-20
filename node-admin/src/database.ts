@@ -8,7 +8,7 @@ const pool = createPool({
     port: 3306,                   
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
 });
 
 const query = async (data:any,args?:any)=>{

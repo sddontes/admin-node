@@ -16,7 +16,7 @@ const getMenu = async (req:Request,resp:Response) => {
 }
 
 const setMenu = async (req:Request,resp:Response) => {
-    const data = await MenuModel.validityName(req.body.parent_id,req.body.name);
+    const data = await MenuModel.validityName(req.body.parent_id,req.body.name,req.body.path);
     if(data.toString().length > 0){
         resp.send({
             code: 401,

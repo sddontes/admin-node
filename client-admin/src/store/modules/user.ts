@@ -87,7 +87,7 @@ class User extends VuexModule implements IUserState {
     if (!data) {
       throw Error('Verification failed, please Login again.')
     }
-    const { roleId, username, remark } = data.records[0]
+    const { roleId, username, remark } = data
     const { data: { records: routes } } = await getRoleMenus({ roleId })
     if (!routes) {
       throw Error('Verification failed, please Login again.')

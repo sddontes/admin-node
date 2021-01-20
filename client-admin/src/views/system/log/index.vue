@@ -23,7 +23,6 @@
       :data="logList"
       row-key="id"
       border
-      max-height="700"
     >
       <el-table-column label="日志ID" align="center" prop="id" width="300" />
       <el-table-column label="传入参数" header-align="center" prop="value" />
@@ -36,7 +35,7 @@
       <el-pagination
         style="float:right;margin:20px 0"
         :current-page="currentPage"
-        :page-sizes="[pageSize,20, 50, 100]"
+        :page-sizes="[pageSize, 20, 50, 100]"
         :page-size="pageSize"
         layout="total, sizes, prev, pager, next, jumper"
         :total="total"
@@ -55,54 +54,54 @@ import { getOperatelog } from '@/api/log'
   name: 'systemLog'
 })
 export default class extends Vue {
-    private loading = true
-    private currentPage=1
-    private pageSize=7
-    private total=0
-    private logList:any[] = []
-    private operateTime = ''
-    private path = ''
-    private formInline = {
-      path: '',
-      operateTime: ''
-    }
+  private loading = true
+  private currentPage = 1
+  private pageSize=7
+  private total=0
+  private logList:any[] = []
+  private operateTime = ''
+  private path = ''
+  private formInline = {
+    path: '',
+    operateTime: ''
+  }
 
-    private async getLogList() {
-      this.loading = true
-      const { data: { records, total } } = await getOperatelog({
-        page: this.currentPage,
-        pageSize: this.pageSize,
-        operateTime: this.operateTime,
-        path: this.path
-      })
-      this.logList = records
-      this.total = total
-      this.loading = false
-    }
+  created() {
+    this.getLogList()
+  }
 
-    private handleCurrentChange(val:any) {
-      console.log(`当前页: ${val}`)
-      this.currentPage = val
-      this.getLogList()
-    }
+  private async getLogList() {
+    this.loading = true
+    const { data: { records, total } } = await getOperatelog({
+      page: this.currentPage,
+      pageSize: this.pageSize,
+      operateTime: this.operateTime,
+      path: this.path
+    })
+    this.logList = records
+    this.total = total
+    this.loading = false
+  }
 
-    private handleSizeChange(val:any) {
-      console.log(`每页 ${val} 条`)
-      this.pageSize = val
-      this.getLogList()
-    }
+  private handleCurrentChange(val:any) {
+    console.log(`当前页: ${val}`)
+    this.currentPage = val
+    this.getLogList()
+  }
 
-    private onSubmit() {
-      this.currentPage = 1
-      this.path = this.formInline.path
-      this.operateTime = this.formInline.operateTime
-      console.log(this.formInline.operateTime)
-      this.getLogList()
-    }
+  private handleSizeChange(val:any) {
+    console.log(`每页 ${val} 条`)
+    this.pageSize = val
+    this.getLogList()
+  }
 
-    created() {
-      this.getLogList()
-    }
+  private onSubmit() {
+    this.currentPage = 1
+    this.path = this.formInline.path
+    this.operateTime = this.formInline.operateTime
+    console.log(this.formInline.operateTime)
+    this.getLogList()
+  }
 }
 </script>
 

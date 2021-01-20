@@ -9,4 +9,5 @@ const router = express_1.Router();
 router.post('/menu', home_controller_1.default.getMenu);
 router.post('/user/login', home_controller_1.default.getUserLogin);
 router.post('/getUserInfor', home_controller_1.default.getUserInfor);
+router.post('/users/getCompany', home_controller_1.default.getCompany);
 exports.default = router;

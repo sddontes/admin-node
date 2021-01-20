@@ -72,19 +72,20 @@
     <el-dialog
       :visible.sync="dialogPermissionVisable"
       :close-on-click-modal="false"
-      title="权限分配"
+      :title="role.name"
       width="800px"
     >
       <el-form>
         <el-form-item>
           <div class="tree-head">
-            <span class="col-1">菜单名称</span>
+            <span class="col-1">路由权限</span>
             <span class="col-2">操作权限</span>
           </div>
 
           <!-- 权限操作树 -->
           <el-tree
             ref="tree"
+            v-loading="loading"
             element-loading-background="#fff"
             node-key="id"
             show-checkbox
@@ -124,7 +125,8 @@ import { getRoles, addRole, updateRole, deleteRole } from '@/api/roles'
 import { getRoleMenus, setRoleMenus } from '@/api/permission'
 
 interface IRole {
-  id: number | null
+  id: number
+  parentId: number
   name: string
   remark: string
   status: number
@@ -132,7 +134,8 @@ interface IRole {
 }
 
 const defaultRole:IRole = {
-  id: null,
+  id: -1,
+  parentId: -1,
   name: '',
   remark: '',
   status: 1,
@@ -156,7 +159,6 @@ export default class extends Vue {
 
   created() {
     this.getRoleList()
-    this.getPermission()
   }
 
   get userRoleId() {
@@ -173,26 +175,31 @@ export default class extends Vue {
     console.log(this.roleList)
   }
 
-  private async getPermission() {
-    const { data: { records } } = await getRoleMenus({ roleId: this.userRoleId })
+  private async getPermission(id: number) {
+    const { data: { records } } = await getRoleMenus({ roleId: id })
     this.permsData = generateAllRoutesTree(records)
     console.log(this.permsData)
   }
 
-  private async handlePermission(scope:any) {
+  private async handlePermission(scope: any) {
     this.loading = true
     this.dialogPermissionVisable = true
     this.checkStrictly = true
     this.role = Object.assign({}, scope.row)
+
+    // 获取角色父级权限
+    await this.getPermission(this.role.parentId)
+    // 获取角色权限
     const { data: { records } } = await getRoleMenus({ roleId: this.role.id })
     this.role.routes = generateArrByTree(generateRoleRoutesTree(records))
-    // console.log(this.role.routes)
+
+    // 填充路由权限
+    ;(this.$refs.tree as Tree).setCheckedNodes(this.role.routes)
+    this.setHalfParents(this.role.routes)
+    // 填充页内操作权限
+    this.fillOperableList(generateArrByTree(this.permsData), this.role.routes)
+
     this.$nextTick(() => {
-      // 填充路由权限
-      (this.$refs.tree as Tree).setCheckedNodes(this.role.routes)
-      this.setHalfParents(this.role.routes)
-      // 填充页内权限
-      this.fillOperableList(generateArrByTree(this.permsData), this.role.routes)
       this.checkStrictly = false
       this.loading = false
     })
@@ -210,18 +217,18 @@ export default class extends Vue {
     }
   }
 
-  private setHalfParents(routes:any) {
-    routes.forEach((route:any) => {
+  private setHalfParents(routes: any) {
+    for (const route of routes) {
       if (route.parentId === 0) {
         const root = (this.$refs.tree as Tree).getNode({ id: route.id })
-        const arr:boolean[] = []
-        root.childNodes.forEach((item:any) => { arr.push(item.checked) })
+        const arr: boolean[] = []
+        root && root.childNodes.map((item: any) => arr.push(item.checked))
         if (arr.indexOf(!arr[0]) > 0) {
           root.checked = false
           root.indeterminate = true
         }
       }
-    })
+    }
   }
 
   private handleCheckedOperations(node:any) {

@@ -17,19 +17,47 @@ const uuid_1 = require("uuid");
 const crypto_1 = __importDefault(require("crypto"));
 const formateData_1 = __importDefault(require("../utils/formateData"));
 const UserModel = {
-    getUsers(callback) {
+    getUsers(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield database_1.default('SELECT a.user_id, role_id, role_name, c.`name`,a.username, a.remark,a.operate_time, a.mail, a.telephone, a.`status` FROM `sys_user` as a LEFT JOIN `sys_user_role` as b ON a.user_id = b.user_id LEFT JOIN `sys_dept` as c ON a.dept_id = c.id');
-            callback && callback(data[0]);
+            // 过滤出改用户下的所有角色
+            const roleData = yield database_1.default('select * from sys_role');
+            const roleArr = roleData[0];
+            let ids = [{ id: req.body.roleId }];
+            const roles = [];
+            function roleFilter(arr) {
+                arr.forEach((e) => {
+                    let cArr = roleArr.filter((ele) => ele.parent_id === e.id);
+                    ids = ids.concat(cArr);
+                    cArr.length && roleFilter(cArr);
+                });
+            }
+            roleFilter(ids);
+            ids.shift();
+            ids.forEach((e) => {
+                e.id && roles.push(e.id);
+            });
+            const size = req.body.pageSize || 10;
+            const pageFrom = (size * (req.body.currentPage - 1)) || 0;
+            const counts = yield database_1.default(`SELECT count('') count FROM sys_user as a LEFT JOIN sys_user_role as b ON a.user_id = b.user_id LEFT JOIN sys_dept as c ON a.dept_id = c.id WHERE a.status!=2 and b.role_id in (${roles.join()})`);
+            const count = counts[0][0]["count"];
+            const data = yield database_1.default(`SELECT a.user_id, role_id, role_name, c.id as deptId,c.department,c.company,a.username, a.remark,a.operate_time, a.mail,a.telephone, a.status FROM sys_user as a LEFT JOIN sys_user_role as b ON a.user_id = b.user_id LEFT JOIN sys_dept as c ON a.dept_id = c.id WHERE a.status!=2 and b.role_id in (${roles.join()}) ORDER BY a.operate_time desc LIMIT ?,?`, [pageFrom, size]);
+            const resArr = data[0];
+            callback && callback({ records: resArr, pages: Math.ceil(count / size), currentPage: req.body.currentPage, count: count });
         });
     },
     deleteUser(userId, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const ordelete = yield this.deleteUserRole(userId);
-            if (ordelete.affectedRows) {
-                const data = yield database_1.default('DELETE FROM `sys_user` WHERE user_id=?', [userId]);
-                callback && callback(data[0]);
-            }
+            // 逻辑删除用户，status字段0使用中1禁用2弃用
+            const data = yield database_1.default(`UPDATE sys_user SET status=2 WHERE user_id=?`, [userId]);
+            callback && callback(data[0]);
+        });
+    },
+    resetPassword(req, callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const md5 = crypto_1.default.createHash('md5');
+            var mdpassword = md5.update('zhubei' + req.body.password).digest('hex');
+            const data = yield database_1.default(`UPDATE sys_user SET password=? WHERE user_id=?`, [mdpassword, req.body.userId]);
+            callback && callback(data[0]);
         });
     },
     validityName(username) {
@@ -41,13 +69,13 @@ const UserModel = {
     setUser(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
             const user_id = uuid_1.v4();
-            const { username, telephone, mail, password, deptId, status, remark, roleName, roleId } = req.body;
+            const { username, telephone, password, deptId, status, remark, roleName, roleId, operator, operateTime } = req.body;
             try {
                 const md5 = crypto_1.default.createHash('md5');
                 var mdpassword = md5.update('zhubei' + password).digest('hex');
                 const orRole = yield this.setUserRole(user_id, roleName, parseInt(roleId));
                 if (orRole.affectedRows) {
-                    const data = yield database_1.default('INSERT INTO `sys_user` (`user_id`,`username`, `remark`,`status`,`telephone`,`mail`,`password`,`dept_id`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [user_id, username, remark, parseInt(status), telephone, mail, mdpassword, parseInt(deptId)]);
+                    const data = yield database_1.default('INSERT INTO `sys_user` (`user_id`,`username`, `remark`,`status`,`telephone`,`password`,`dept_id`,`operator`,`operate_time`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)', [user_id, username, remark, parseInt(status), telephone, mdpassword, parseInt(deptId), operator, operateTime]);
                     callback && callback(data[0]);
                 }
             }
@@ -62,10 +90,11 @@ const UserModel = {
                 username: "",
                 telephone: "",
                 mail: "",
-                // password: "",
                 dept_id: 0,
                 status: 0,
                 remark: "",
+                operateTime: "",
+                operator: ''
             };
             const mastData2 = {
                 role_name: "",
@@ -76,7 +105,6 @@ const UserModel = {
             let lastArr = [];
             let lastArr2 = [];
             let reqData = req.body;
-            console.log(reqData);
             for (let key in reqData) {
                 let nextKey = formateData_1.default.toLine(key);
                 if (mastData1.hasOwnProperty(nextKey) && nextKey != "user_id") {
@@ -116,7 +144,6 @@ const UserModel = {
             const data = yield database_1.default(`UPDATE sys_user_role SET ${lastArr2.map((item, index) => {
                 return `${item}=?`;
             })} WHERE user_id=?`, [...lastArr2.map((item, index) => {
-                    console.log(lastData2[item]);
                     return lastData2[item];
                 }), user_id]);
             return data[0];

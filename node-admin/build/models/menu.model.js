@@ -20,15 +20,15 @@ const MenuModel = {
             callback && callback(data[0]);
         });
     },
-    validityName(parent_id, name) {
+    validityName(parent_id, name, path) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield database_1.default('select * from sys_acl_module where parent_id= ? and name=?', [parent_id, name]);
+            const data = yield database_1.default('select * from sys_acl_module where parent_id=? and name=? OR path=?', [parent_id, name, path]);
             return data[0];
         });
     },
     setMenu(req, callback) {
         return __awaiter(this, void 0, void 0, function* () {
-            const data = yield database_1.default('INSERT INTO `sys_acl_module` (`name`, `remark`,`status`,`seq`,`auth`,`icon`,`parent_id`,`url`,`level`,`type`) VALUES (?, ?, ?,?, ?, ?,?, ?, ?,?)', [req.body.name, req.body.remark || '', req.body.status, req.body.seq, req.body.auth || "", req.body.icon || "", req.body.parent_id || 0, req.body.url || "", req.body.level || "", req.body.type]);
+            const data = yield database_1.default('INSERT INTO `sys_acl_module` (`name`, `remark`,`status`,`seq`,`auth`,`icon`,`parent_id`,`url`,`level`,`type`,`path`) VALUES (?, ?, ?,?, ?, ?,?, ?, ?,?,?)', [req.body.name, req.body.remark || '', req.body.status, req.body.seq, req.body.auth || "", req.body.icon || "", req.body.parentId || 0, req.body.url || "", req.body.level || "", req.body.type, req.body.path || ""]);
             callback && callback(data[0]);
         });
     },
@@ -49,6 +49,7 @@ const MenuModel = {
                 type: 1,
                 auth: '',
                 icon: '',
+                path: ''
             };
             let lastData = {};
             let lastArr = [];
@@ -59,9 +60,12 @@ const MenuModel = {
                     lastArr.push(key);
                 }
             }
+            console.log(`UPDATE sys_acl_module SET ${lastArr.map((item, index) => {
+                return `${item}=?`;
+            })} WHERE id=?`);
             const data = yield database_1.default(`UPDATE sys_acl_module SET ${lastArr.map((item, index) => {
-                return index == lastArr.length - 1 ? `${item}=?` : `${item}=?,`;
-            })} WHERE id=?`, [lastArr.map((item, index) => {
+                return `${item}=?`;
+            })} WHERE id=?`, [...lastArr.map((item, index) => {
                     return lastData[item];
                 }), req.body.id]);
             callback && callback(data[0]);

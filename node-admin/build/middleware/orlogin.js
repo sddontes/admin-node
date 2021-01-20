@@ -5,8 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const token_1 = __importDefault(require("../utils/token"));
 function orloginMiddleware(req, res, next) {
-    console.log("req.originalUrl____", req.originalUrl);
-    if (['/api/user/login'].includes(req.originalUrl)) {
+    const originUrl = req.originalUrl.split("?")[0];
+    console.log("req.originalUrl____", [originUrl, '/api/user/login', '/api/cas/login'].includes(originUrl));
+    if (['/api/user/login', '/cas/validate', '/cas/login'].includes(originUrl)) {
         next();
         return;
     }
@@ -23,6 +24,7 @@ function orloginMiddleware(req, res, next) {
         let deToken = token_1.default.decrypt(token);
         if (deToken.token) {
             req.body.useId = deToken.id;
+            req.body.username = deToken.username;
             next();
         }
         else {

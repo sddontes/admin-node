@@ -126,6 +126,9 @@ var MenuModel = {
                                 lastArr.push(key);
                             }
                         }
+                        console.log("UPDATE sys_acl_module SET " + lastArr.map(function (item, index) {
+                            return item + "=?";
+                        }) + " WHERE id=?");
                         return [4 /*yield*/, database_1["default"]("UPDATE sys_acl_module SET " + lastArr.map(function (item, index) {
                                 return item + "=?";
                             }) + " WHERE id=?", __spreadArrays(lastArr.map(function (item, index) {

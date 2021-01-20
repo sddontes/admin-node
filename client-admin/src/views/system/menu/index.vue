@@ -125,6 +125,7 @@ import { getMenus, addMenu, editMenu, deleteMenu, setRoleMenus } from '@/api/per
 import svgIcons from '@/views/icons/svg-icons'
 
 const defaultMenu = {
+  id: null,
   parentId: 0,
   name: '',
   path: '',
@@ -155,10 +156,10 @@ export default class extends Vue {
   private validatePath(rule: any, value: string, callback: Function) {
     let isRepeat = false
     generateArrByTree(this.list).map((item: any) => {
-      if (item.parentId === 0 && this.menu.parentId === 0) {
+      if (item.parentId === 0 && this.menu.parentId === 0 && item.id !== this.menu.id) {
         item.path === value && (isRepeat = true)
       } else if (item.id === this.menu.parentId) {
-        item.children.map((it: any) => it.path === value && (isRepeat = true))
+        item.children.map((it: any) => it.id !== this.menu.id && it.path === value && (isRepeat = true))
       }
     })
 

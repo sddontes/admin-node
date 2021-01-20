@@ -5,6 +5,9 @@
       <el-button size="small" @click="handleAddUser">
         <i class="el-icon-plus" /> 新增用户
       </el-button>
+      <el-button size="small" @click="handleCas">
+        <i class="el-icon-plus" /> cas认证
+      </el-button>
     </el-row>
 
     <!-- 用户列表 -->
@@ -14,11 +17,17 @@
       row-key="id"
       border
     >
-      <el-table-column label="用户ID" align="center" prop="userId" width="300" />
-      <el-table-column label="用户名称" header-align="center" prop="username" />
-      <el-table-column label="角色" header-align="center" prop="roleName" />
-      <el-table-column label="手机号" align="center" prop="telephone" />
-      <el-table-column label="状态" align="center">
+      <el-table-column label="用户ID" align="center" prop="userId" min-width="220" />
+      <el-table-column label="用户名称" header-align="center" prop="userName" />
+      <el-table-column label="角色" header-align="center" prop="roleName" min-width="200">
+        <template slot-scope="scope">
+          <el-tag v-for="item in strToArr(scope.row.roleName)" :key="item" style="margin:3px">
+            {{ item }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="手机号" align="center" prop="telephone" min-width="110" />
+      <el-table-column label="状态" align="center" width="80">
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status === 1" type="success">启用</el-tag>
           <el-tag v-else type="danger">禁用</el-tag>
@@ -57,7 +66,7 @@
           <el-input v-model="userInfo.userId" disabled />
         </el-form-item>
         <el-form-item label="用户名">
-          <el-input v-model="userInfo.username" placeholder="用户名" />
+          <el-input v-model="userInfo.userName" placeholder="用户名" />
         </el-form-item>
         <el-form-item label="手机号">
           <el-input v-model="userInfo.telephone" placeholder="手机号码" />
@@ -65,17 +74,31 @@
         <el-form-item label="公司部门">
           <el-cascader
             v-model="userInfo.deptId"
+            style="width:100%"
             :options="companyList"
             @change="handleChange"
           />
         </el-form-item>
-        <el-form-item label="角色">
+        <el-form-item label="当前角色">
+          <el-tag v-for="item in userInfo.roleOrigin" :key="item" style="margin-right:10px">
+            {{ item }}
+          </el-tag>
+        </el-form-item>
+        <el-form-item label="修改角色">
           <el-cascader
             v-model="userInfo.roleId"
+            style="width:100%"
             :options="roleList"
+            placeholder="使用当前角色"
             :show-all-levels="false"
-            :props="{expandTrigger: 'hover', checkStrictly: true}"
-          />
+            :props="{expandTrigger: 'hover', multiple: true,checkStrictly: true}"
+            clearable
+          >
+            <template slot-scope="{node, data}">
+              <span>{{ data.label }}</span>
+              <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+            </template>
+          </el-cascader>
         </el-form-item>
         <el-form-item v-show="dialogType==='edit'?false:true" label="设置密码">
           <el-input v-model="userInfo.password" placeholder="密码为6-18位字母或数字" />
@@ -137,7 +160,7 @@ import { throttle } from '@/decorator'
 import { UserModule } from '@/store/modules/user'
 import { getRoles } from '@/api/roles'
 import { getCompany } from '@/api/company'
-import { getUsers, deleteUser, setUser, updateUser, resetPassword } from '@/api/users'
+import { getUsers, deleteUser, setUser, updateUser, resetPassword, cas, validate } from '@/api/users'
 
 const defaultRole = {
   id: null,
@@ -153,7 +176,7 @@ export default class extends Vue {
   private currentPage=1
   private pageSize=10
   private total=0
-  private userInfo:any = { status: 0 }
+  private userInfo:any = { status: 0, roleId: [] }
   private companyList:any[]=[]
   private roleArr:any[]=[]
   private role = Object.assign({}, defaultRole)
@@ -177,6 +200,7 @@ export default class extends Vue {
     this.getUsersList()
     this.getRoleList()
     this.getCompanyList()
+    console.log('-------------', this.userInfo)
   }
 
   get userRoleId() {
@@ -216,6 +240,7 @@ export default class extends Vue {
     this.roleList = data
     this.getTree(this.roleList)
     this.roleList.length && this.filterRole(this.roleList) // 铺平所有角色
+    console.log('this.roleList', this.roleList)
   }
 
   private getTree(arr:any) {
@@ -233,6 +258,7 @@ export default class extends Vue {
   private async getUsersList() {
     const { data: { records, count } } = await getUsers({ roleId: this.userRoleId, currentPage: this.currentPage, pageSize: this.pageSize })
     this.userList = records
+    console.log('--------------', records)
     this.total = count
     this.loading = false
   }
@@ -247,6 +273,7 @@ export default class extends Vue {
     this.dialogType = 'edit'
     this.dialogVisible = true
     this.userInfo = Object.assign({}, row)
+    this.userInfo.roleOrigin = this.userInfo.roleName.split(',')
     this.userInfo.deptId = [this.userInfo.deptId, this.userInfo.deptId]
     this.userInfo.roleId = [this.userInfo.roleId]
   }
@@ -277,10 +304,19 @@ export default class extends Vue {
     })
   }
 
+  private strToArr(str:string) {
+    return (str && str.split(',')) || []
+  }
+
   @throttle
   private async confirmUser() {
-    const role:any = this.roleArr.filter((e: any) => e.id === this.userInfo.roleId[this.userInfo.roleId.length - 1])
-    const params = Object.assign({}, this.userInfo, { roleId: role[0].id, roleName: role[0].name, deptId: this.userInfo.deptId[0], operator: this.name, operateTime: new Date() })
+    const roles:any = []
+    this.userInfo.roleId.map((ele:any) => {
+      var id = ele[ele.length - 1]
+      roles.push(this.roleArr.filter((e: any) => e.id === id)[0])
+    })
+    // this.roleArr.filter((e: any) => e.id === this.userInfo.roleId[this.userInfo.roleId.length - 1])
+    const params = Object.assign({}, this.userInfo, { roles, deptId: this.userInfo.deptId[0], operator: this.name, operateTime: new Date() })
     const res = this.dialogType === 'edit' ? await updateUser(params) : await setUser(params)
     this.$message({
       type: 'success',
@@ -333,6 +369,13 @@ export default class extends Vue {
     console.log(`当前页: ${val}`)
     this.currentPage = val
     this.getUsersList()
+  }
+
+  private handleCas() {
+    // validate()
+    location.href = 'http://cas.jia.com:3000/cas/validate'
+    // window.location.href = 'http://admin.qeeka.com:3000/ap/cas/login?service=http%3A%2F%2Fadmin.qeeka.com%3A3000%2Fcas%2Fvalidate&sn=undefined'
+    // cas()
   }
 }
 </script>

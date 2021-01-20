@@ -10,4 +10,5 @@ router.post('/getUsers', user_controller_1.default.getUsers);
 router.post('/setUser', user_controller_1.default.setUser);
 router.post('/deleteUser', user_controller_1.default.deleteUser);
 router.post('/updateUser', user_controller_1.default.updateUser);
+router.post('/resetPassword', user_controller_1.default.resetPassword);
 exports.default = router;

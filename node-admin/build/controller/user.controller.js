@@ -15,11 +15,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const user_model_1 = __importDefault(require("../models/user.model"));
 const formateData_1 = __importDefault(require("../utils/formateData"));
 const getUsers = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-    user_model_1.default.getUsers((data) => {
+    user_model_1.default.getUsers(req, (data) => {
         resp.send({
             code: 200,
             data: {
-                records: formateData_1.default.replaceUnderLine(data)
+                records: formateData_1.default.replaceUnderLine(data.records),
+                pages: data.pages,
+                currentPage: data.currentPage,
+                count: data.count
             }
         });
     });
@@ -76,7 +79,7 @@ const deleteUser = (req, resp) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 const updateUser = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!req.body.userId) {
+    if (!req.body.useId) {
         resp.send({
             code: 401,
             data: {
@@ -104,9 +107,40 @@ const updateUser = (req, resp) => __awaiter(void 0, void 0, void 0, function* ()
         }
     });
 });
+const resetPassword = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("req.body.userId", req.body);
+    if (!req.body.useId) {
+        resp.send({
+            code: 401,
+            data: {
+                msg: '参数错误'
+            }
+        });
+        return;
+    }
+    user_model_1.default.resetPassword(req, (data) => {
+        if (data.affectedRows) {
+            resp.send({
+                code: 200,
+                data: {
+                    msg: '操作成功'
+                }
+            });
+        }
+        else {
+            resp.send({
+                code: 500,
+                data: {
+                    msg: '操作失败'
+                }
+            });
+        }
+    });
+});
 exports.default = {
     getUsers,
     setUser,
     deleteUser,
-    updateUser
+    updateUser,
+    resetPassword
 };

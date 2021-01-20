@@ -8,21 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const promise_1 = require("mysql2/promise");
-const pool = promise_1.createPool({
-    host: 'rm-uf6dn32j615pxh72i.mysql.rds.aliyuncs.com',
-    user: 'zb_test',
-    password: '123456@Mysql',
-    database: 'zhubei_front',
-    port: 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-});
-const query = (data, args) => __awaiter(void 0, void 0, void 0, function* () {
-    const connet = yield pool;
-    const next = yield connet.query(data, args);
-    return next;
-});
-exports.default = query;
+const database_1 = __importDefault(require("../database"));
+const CompanyModel = {
+    getCompany(callback) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield database_1.default(`select * from sys_dept`);
+            callback && callback(data[0]);
+        });
+    }
+};
+exports.default = CompanyModel;

@@ -16,6 +16,7 @@ module.exports = {
   devServer: {
     port: devServerPort,
     open: true,
+    disableHostCheck: true,
     overlay: {
       warnings: false,
       errors: true
@@ -24,19 +25,16 @@ module.exports = {
     proxy: {
       // change xxx-api/login => /mock-api/v1/login
       // detail: https://cli.vuejs.org/config/#devserver-proxy
-      [process.env.VUE_APP_BASE_API]: {
-        target: `http://localhost:${mockServerPort}/mock-api/v1`,
+      'https://cas.qeeka.com/': {
+        target: 'https://cas.qeeka.com/',
         changeOrigin: true, // needed for virtual hosted sites
-        ws: true, // proxy websockets
-        pathRewrite: {
-          ['^' + process.env.VUE_APP_BASE_API]: ''
-        }
+        ws: true
       },
       '/api': {
-        target: 'http://192.168.91.75:3000', // API服务器的地址
-        // target: 'http://t-bff.zhubeijia.com', // API服务器的地址
+        // target: 'http://192.168.91.75:3000', // API服务器的地址
+        target: 'http://t-bff.zhubeijia.com', // API服务器的地址
         ws: true,
-        changeOrigin: true // 是否跨域，虚拟的站点需要更管origin
+        changeOrigin: true // 是否跨域，虚拟的站点需要更换origin
       }
     }
   },

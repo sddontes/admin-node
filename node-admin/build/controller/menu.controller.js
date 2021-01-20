@@ -27,7 +27,7 @@ const getMenu = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
     });
 });
 const setMenu = (req, resp) => __awaiter(void 0, void 0, void 0, function* () {
-    const data = yield menu_model_1.default.validityName(req.body.parent_id, req.body.name);
+    const data = yield menu_model_1.default.validityName(req.body.parent_id, req.body.name, req.body.path);
     if (data.toString().length > 0) {
         resp.send({
             code: 401,

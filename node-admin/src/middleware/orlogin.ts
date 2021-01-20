@@ -2,8 +2,9 @@ import { Request,Response,NextFunction } from 'express'
 import Token from '../utils/token';
 
 function orloginMiddleware(req:Request, res:Response, next:NextFunction): void{
-  console.log("req.originalUrl____",req.originalUrl)
-    if(['/api/user/login'].includes(req.originalUrl)){
+  const originUrl=req.originalUrl.split("?")[0]
+  console.log("req.originalUrl____",[originUrl,'/api/user/login','/api/cas/login'].includes(originUrl))
+    if(['/api/user/login','/cas/validate','/cas/login'].includes(originUrl)){
       next()
       return;
     }
@@ -19,6 +20,7 @@ function orloginMiddleware(req:Request, res:Response, next:NextFunction): void{
       let deToken = Token.decrypt(token);
       if(deToken.token){
        req.body.useId = deToken.id;
+       req.body.username = deToken.username;
        next()
       }else{
        res.send({
