@@ -1,0 +1,28 @@
+.DS_Store
+client-admin/node_modules
+client-admin/dist
+node-admin/node_modules
+
+client-admin/tests/e2e/videos/
+client-admin/tests/e2e/screenshots/
+client-admin/tests/**/coverage/
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+.history
+.ionide
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
